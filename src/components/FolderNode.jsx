@@ -3,11 +3,9 @@ import { Avatar } from "@mui/material"
 import { FaChevronRight, FaChevronDown, FaFolder } from 'react-icons/fa'
 import { useSelectedNodeState, useFilteredIdState } from "../contexts"
 import { FamilyRightClickMenu } from "./FamilyRightClickMenu.jsx"
-import { Button } from "bootstrap"
 import { EditFamilyModal } from "./EditFamilyModal"
 import '../components/Buttons/buttons.css'
-import { Modal } from '@mui/material'
-import { FamilyDetailsForm } from './FamilyDetailsForm';
+
 
 export const FolderNode = ({ node, depth, ancentors = [] }) => {
 
