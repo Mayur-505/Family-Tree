@@ -1,0 +1,16 @@
+.buttons {
+  display: inline;
+  margin-Top: 5px;
+  padding: 10px 17px;
+  color: White;
+  font-Weight: 500;
+  font-Size: 12px;
+  background: #ffff;
+  color: black;
+  border: none;
+  border-radius: 4px;
+}
+
+.buttons:hover {
+  background: #ffa000;
+}
