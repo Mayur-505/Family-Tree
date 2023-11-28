@@ -11,7 +11,7 @@ function GoogleApi() {
   const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
   const SCOPES = 'https://www.googleapis.com/auth/drive.file';
   const CLIENT_ID = "497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com";
-  const API_KEY = "AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg";
+  const API_KEY = "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";
 
   const updateSigninStatus = (isSignedIn) => {
     setIsSignedIn(isSignedIn);
@@ -55,11 +55,13 @@ function GoogleApi() {
   };
 
   const openFilePicker = () => {
+    console.log('gapi.auth.getToken().access_token', API_KEY);
     const picker = new window.google.picker.PickerBuilder()
       .addView(new window.google.picker.DocsView())
       .setOAuthToken(gapi.auth.getToken().access_token)
       .setDeveloperKey(API_KEY)
       .setCallback((data) => {
+        console.log('data ++ ', data);
         if (data[window.google.picker.Response.ACTION] === window.google.picker.Action.PICKED) {
           const fileId = data[window.google.picker.Response.DOCUMENTS][0].id;
 
