@@ -7,7 +7,8 @@ import { useTreeState, useSelectedNodeState } from '../../contexts';
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
   const [selectedNode, setSelectedNode] = useSelectedNodeState();
-  const [data, setData] = useTreeState();
+  const [treeState, setTreeState] = useTreeState();
+  const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
 
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
@@ -18,44 +19,31 @@ const GoogleDrivePick = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-      window.gapi.load('client:auth2', () => {
-        window.gapi.client.init({
-          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
-          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-          scope: 'https://www.googleapis.com/auth/drive.file',
-        }).then(() => {
-          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-          if (isSignedIn) {
-            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
-            setOauthToken(currentUser.get().getAuthResponse().access_token);
-          }
-        });
+  const updateTreeStateWithFiles = (selectedFiles) => {
+    const newNodes = selectedFiles.map((file) => {
+      return {
+        id: file.id,
+        Name: file.name,
+        // Add other properties based on your file structure
+      };
+    });
+
+    setTreeState((prevData) => {
+      const updatedData = { ...prevData };
+      newNodes.forEach((node) => {
+        updatedData[node.id] = node;
       });
-    };
-    document.head.appendChild(script);
-  }, []);
+      return updatedData;
+    });
+  };
 
   const handleSuccess = (data) => {
     console.log('Selected Files:', data);
 
-    data.docs.forEach((file) => {
-      const newFamilyMember = {
-        id: file.id,
-        Name: file.name,
-      };
+    // Filter files to include only those with JSON content (if needed)
+    const jsonFiles = data.docs.filter((file) => file.mimeType === 'application/json');
 
-      setData((prevData) => {
-        const updatedData = { ...prevData, [newFamilyMember.id]: newFamilyMember };
-        return updatedData;
-      });
-
-      setSelectedNode(newFamilyMember);
-    });
+    updateTreeStateWithFiles(jsonFiles);
   };
 
   const handleAuthClick = () => {
@@ -67,10 +55,6 @@ const GoogleDrivePick = () => {
     } else {
       console.error('Google API client library not fully loaded.');
     }
-  };
-
-  const handlePickerClose = () => {
-    console.log('User closed the Google Picker.');
   };
 
   const openPicker = () => {
@@ -87,7 +71,6 @@ const GoogleDrivePick = () => {
         .setOAuthToken(oauthToken)
         .setDeveloperKey('AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg')
         .setCallback(handleSuccess)
-        .setOrigin(window.location.protocol + '//' + window.location.host)
         .build();
 
       picker.setVisible(true);
@@ -102,6 +85,33 @@ const GoogleDrivePick = () => {
     }
   };
 
+  useEffect(() => {
+    const loadClient = async () => {
+      try {
+        await window.gapi.client.init({
+          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
+          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive.metadata.readonly',
+        });
+
+        // Optionally, you can check the sign-in status here
+        // const auth2 = window.gapi.auth2.getAuthInstance();
+        // auth2.isSignedIn.listen(updateSigninStatus);
+        // updateSigninStatus(auth2.isSignedIn.get());
+      } catch (error) {
+        setIsLoadingGoogleDriveApi(false);
+        console.error('Error initializing Google API client:', error);
+      }
+    };
+
+    if (window.gapi && window.gapi.auth2) {
+      loadClient();
+    } else {
+      console.error('Google API client library not loaded.');
+    }
+  }, []);
+
   return (
     <div>
       {!oauthToken ? (
@@ -111,7 +121,7 @@ const GoogleDrivePick = () => {
       ) : (
         <>
           <Button sx={style} component="label" onClick={openPicker}>
-            Choose File from Google Drive
+            Open Google Picker
           </Button>
           <Button sx={style} component="label" onClick={handleSignOut}>
             Sign Out
@@ -122,4 +132,4 @@ const GoogleDrivePick = () => {
   );
 };
 
-export default GoogleDrivePick;
+export default GoogleDrivePick
