@@ -2,20 +2,21 @@ import React from 'react';
 import { FolderNode } from '../FolderNode';
 import { useTreeState } from '../../contexts';
 
-export const FolderStructure = () => {
+export const FolderStructure = ({ selectedNode,setSelectedNode }) => {
   const [treeState] = useTreeState();
 
   return (
     <div style={{ borderBottom: '2px solid black', width: '100%', flexGrow: 1, overflowY: 'auto' }}>
       {Object.keys(treeState).length > 0 && (
         <ul>
-          <FolderNode node={treeState} key={treeState.id} depth={0} />
+          {/* Pass the selectedNode to FolderNode */}
+          <FolderNode node={treeState} key={treeState.id} depth={0} selectedNode={selectedNode} setSelectedNode={setSelectedNode}/>
         </ul>
       )}
     </div>
   );
 };
-export default FolderStructure
+
 
 
 // import React, {useRef} from 'react'

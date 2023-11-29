@@ -1,19 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Avatar } from '@mui/material';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
-import { useSelectedNodeState, useFilteredIdState } from "../contexts"
+import { useSelectedNodeState } from '../contexts';
 import { FamilyRightClickMenu } from './FamilyRightClickMenu';
 import { EditFamilyModal } from './EditFamilyModal';
 import '../components/Buttons/buttons.css';
 
-
-
-
-export const FolderNode = ({ node, depth, ancestors = [] }) => {
+export const FolderNode = ({ node, depth, ancestors = [], selectedNode, setSelectedNode }) => {
   const depthRef = useRef(depth + 1);
   const ancestorsRef = useRef([...ancestors, node.id]);
   const [open, setOpen] = useState(true);
-  const [selectedNode, setSelectedNode] = useSelectedNodeState();
   const [anchor, setAnchor] = useState();
   const [editModal, setEditModal] = useState(false);
 
@@ -36,10 +32,12 @@ export const FolderNode = ({ node, depth, ancestors = [] }) => {
           onClick={() => {
             node.children && setOpen((prevState) => !prevState);
             setAnchor(null);
+            // Update selectedNode when clicking on a node
             setSelectedNode({ ...node, ancestors: ancestorsRef.current });
           }}
           onContextMenu={(e) => {
             e.preventDefault();
+            // Update selectedNode when right-clicking on a node
             setSelectedNode({ ...node, ancestors: ancestorsRef.current });
             setAnchor(e.currentTarget);
           }}
@@ -75,7 +73,13 @@ export const FolderNode = ({ node, depth, ancestors = [] }) => {
         {node.children && (
           <ul style={{ height: open ? '100%' : 0, overflow: 'hidden' }}>
             {Object.values(node.children).map((subNode) => (
-              <FolderNode node={subNode} key={subNode.id} depth={depthRef.current} ancestors={ancestorsRef.current} />
+              <FolderNode
+                node={subNode}
+                key={subNode.id}
+                depth={depthRef.current}
+                ancestors={ancestorsRef.current}
+                selectedNode={selectedNode} // Pass selectedNode to subnodes
+              />
             ))}
           </ul>
         )}
@@ -85,7 +89,9 @@ export const FolderNode = ({ node, depth, ancestors = [] }) => {
     </>
   );
 };
-export default FolderNode
+
+export default FolderNode;
+
 
 // import React, { useRef, useState } from "react"
 // import { Avatar } from "@mui/material"

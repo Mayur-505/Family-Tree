@@ -3,12 +3,12 @@ import { Button } from '@mui/material';
 import queryString from 'query-string';
 import { style } from './Button';
 import { useTreeState, useSelectedNodeState } from '../../contexts';
+import FolderStructure from '../layouts/FolderStructure';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
-  const [selectedNode, setSelectedNode] = useSelectedNodeState();
-  const [treeState, setTreeState] = useTreeState();
-  const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
+  const [data, setData] = useTreeState();
+  const setSelectedNode = useSelectedNodeState()[1];
 
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
@@ -19,29 +19,92 @@ const GoogleDrivePick = () => {
     }
   }, []);
 
-  const updateTreeStateWithFiles = (selectedFiles) => {
-    const newNodes = selectedFiles.map((file) => {
-      return {
-        id: file.id,
-        Name: file.name,
-        // Add other properties based on your file structure
-      };
-    });
-
-    setTreeState((prevData) => {
-      const updatedData = { ...prevData };
-      newNodes.forEach((node) => {
-        updatedData[node.id] = node;
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => {
+      window.gapi.load('client:auth2', () => {
+        window.gapi.client.init({
+          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
+          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive.file',
+        }).then(() => {
+          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+          if (isSignedIn) {
+            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
+            setOauthToken(currentUser.get().getAuthResponse().access_token);
+          }
+        });
       });
-      return updatedData;
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  // ...
+
+  const updateTreeStateWithFiles = (selectedFiles) => {
+
+    selectedFiles.forEach((file) => {
+      const reader = new FileReader();
+
+
+      reader.onload = (e) => {
+        try {
+
+          const jsonData = JSON.parse(e.target.result);
+
+          setData((prevData) => {
+            const updatedData = { ...prevData };
+
+
+            extractNodesFromJson(jsonData, updatedData);
+
+            return updatedData;
+          });
+
+
+          setSelectedNode(jsonData);
+        } catch (error) {
+
+          console.error('Error parsing JSON:', error);
+          alert('Invalid JSON file');
+        }
+      };
+
+
+      reader.readAsText(file);
     });
   };
+
+  const extractNodesFromJson = (jsonData, updatedData, currentPath = '') => {
+
+    if (typeof jsonData === 'object' && jsonData !== null) {
+
+      for (const [key, value] of Object.entries(jsonData)) {
+
+        const newPath = currentPath ? `${currentPath}.${key}` : key;
+
+
+        updatedData[newPath] = {
+          id: newPath,
+          Name: key,
+
+        };
+
+
+        extractNodesFromJson(value, updatedData, newPath);
+      }
+    }
+  };
+
 
   const handleSuccess = (data) => {
     console.log('Selected Files:', data);
 
-    // Filter files to include only those with JSON content (if needed)
+
     const jsonFiles = data.docs.filter((file) => file.mimeType === 'application/json');
+
 
     updateTreeStateWithFiles(jsonFiles);
   };
@@ -55,6 +118,10 @@ const GoogleDrivePick = () => {
     } else {
       console.error('Google API client library not fully loaded.');
     }
+  };
+
+  const handlePickerClose = () => {
+    console.log('User closed the Google Picker.');
   };
 
   const openPicker = () => {
@@ -71,6 +138,7 @@ const GoogleDrivePick = () => {
         .setOAuthToken(oauthToken)
         .setDeveloperKey('AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg')
         .setCallback(handleSuccess)
+        .setOrigin(window.location.protocol + '//' + window.location.host)
         .build();
 
       picker.setVisible(true);
@@ -85,33 +153,6 @@ const GoogleDrivePick = () => {
     }
   };
 
-  useEffect(() => {
-    const loadClient = async () => {
-      try {
-        await window.gapi.client.init({
-          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
-          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-          scope: 'https://www.googleapis.com/auth/drive.metadata.readonly',
-        });
-
-        // Optionally, you can check the sign-in status here
-        // const auth2 = window.gapi.auth2.getAuthInstance();
-        // auth2.isSignedIn.listen(updateSigninStatus);
-        // updateSigninStatus(auth2.isSignedIn.get());
-      } catch (error) {
-        setIsLoadingGoogleDriveApi(false);
-        console.error('Error initializing Google API client:', error);
-      }
-    };
-
-    if (window.gapi && window.gapi.auth2) {
-      loadClient();
-    } else {
-      console.error('Google API client library not loaded.');
-    }
-  }, []);
-
   return (
     <div>
       {!oauthToken ? (
@@ -121,15 +162,17 @@ const GoogleDrivePick = () => {
       ) : (
         <>
           <Button sx={style} component="label" onClick={openPicker}>
-            Open Google Picker
+            Choose File from Google Drive
           </Button>
           <Button sx={style} component="label" onClick={handleSignOut}>
             Sign Out
           </Button>
         </>
       )}
+
+
     </div>
   );
 };
 
-export default GoogleDrivePick
+export default GoogleDrivePick;
