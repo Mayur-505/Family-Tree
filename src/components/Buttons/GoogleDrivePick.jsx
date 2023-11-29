@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
-import { style } from './Button';
 import queryString from 'query-string';
+import { style } from './Button';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
@@ -19,30 +19,25 @@ const GoogleDrivePick = () => {
     // Load the Google API client library
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
-    if (window.gapi) {
-      script.onload = () => {
-        // Initialize the Google API client
-        window.gapi.load('client:auth2', () => {
-          window.gapi.client.init({
-            apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
-            clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-            scope: 'https://www.googleapis.com/auth/drive.file',
-          }).then(() => {
-            // Check if the user is already signed in
-            const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-            if (isSignedIn) {
-              const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
-              setOauthToken(currentUser.get().getAuthResponse().access_token);
-            }
-          });
+    script.onload = () => {
+      // Initialize the Google API client
+      window.gapi.load('client:auth2', () => {
+        window.gapi.client.init({
+          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
+          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive.file',
+        }).then(() => {
+          // Check if the user is already signed in
+          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+          if (isSignedIn) {
+            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
+            setOauthToken(currentUser.get().getAuthResponse().access_token);
+          }
         });
-      }
-    } else {
-      console.error('Google API client library not loaded.');
-    }
+      });
+    };
     document.head.appendChild(script);
-
   }, []);
 
   const handleSuccess = (data) => {
@@ -50,10 +45,15 @@ const GoogleDrivePick = () => {
   };
 
   const handleAuthClick = () => {
-    // Trigger the Google Sign-In dialog
-    window.gapi.auth2.getAuthInstance().signIn().then((user) => {
-      setOauthToken(user.getAuthResponse().access_token);
-    });
+    // Ensure that gapi and gapi.auth2 are available
+    if (window.gapi && window.gapi.auth2) {
+      // Trigger the Google Sign-In dialog
+      window.gapi.auth2.getAuthInstance().signIn().then((user) => {
+        setOauthToken(user.getAuthResponse().access_token);
+      });
+    } else {
+      console.error('Google API client library not fully loaded.');
+    }
   };
 
   const openPicker = () => {
@@ -76,21 +76,27 @@ const GoogleDrivePick = () => {
 
   const handleSignOut = () => {
     // Sign out the user
-    window.gapi.auth2.getAuthInstance().signOut().then(() => {
-      setOauthToken(null);
-    });
+    if (window.gapi && window.gapi.auth2) {
+      window.gapi.auth2.getAuthInstance().signOut().then(() => {
+        setOauthToken(null);
+      });
+    }
   };
-
-
 
   return (
     <div>
       {!oauthToken ? (
-        <Button sx={style} component="label" onClick={handleAuthClick}>Authenticate with Google</Button>
+        <Button sx={style} component="label" onClick={handleAuthClick}>
+          Authenticate with Google
+        </Button>
       ) : (
         <>
-          <Button sx={style} component="label" onClick={openPicker}>Open Google Picker</Button>
-          <Button sx={style} onClick={handleSignOut}>Sign Out</Button>
+          <Button sx={style} component="label" onClick={openPicker}>
+            Open Google Picker
+          </Button>
+          <Button sx={style} component="label" onClick={handleSignOut}>
+            Sign Out
+          </Button>
         </>
       )}
     </div>
