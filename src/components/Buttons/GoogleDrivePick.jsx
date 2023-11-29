@@ -76,6 +76,22 @@ const GoogleDrivePick = () => {
     });
   };
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => {
+      if (window.gapi) {
+        window.gapi.load('client:auth2', () => {
+          // Rest of your initialization code
+        });
+      } else {
+        console.error('Google API client library not loaded.');
+      }
+    };
+    document.head.appendChild(script);
+  }, []);
+
+
   return (
     <div>
       {!oauthToken ? (
