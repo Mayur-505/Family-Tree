@@ -49,10 +49,28 @@ const GoogleDrivePick = () => {
     authenticate();
   }, []);
 
-  const handleFileSelect = (fileId) => {
-    // Perform actions with the selected file, e.g., download, display details, etc.
-    console.log(`Selected file with ID: ${fileId}`);
+  const handleFileSelect = async (fileId) => {
+    try {
+      // Export the content of the selected file
+      const response = await window.gapi.client.drive.files.export({
+        fileId: fileId,
+        mimeType: 'text/plain', // Adjust the mimeType based on the file type
+      });
+
+      const fileContent = response.body;
+
+      // Log the content of the selected file
+      console.log('Selected File Content:');
+      console.log(fileContent);
+
+      // Perform additional actions based on your requirements
+      // For example, you can store the content in your React state
+      // or dispatch an action to update your Redux store
+    } catch (error) {
+      console.error('Error fetching file content:', error);
+    }
   };
+
 
   return (
     <div>
