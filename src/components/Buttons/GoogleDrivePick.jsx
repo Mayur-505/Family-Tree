@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import queryString from 'query-string';
 import { style } from './Button';
+import { useTreeState, useSelectedNodeState } from '../../contexts';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
+  const [selectedNode, setSelectedNode] = useSelectedNodeState();
+  const [data, setData] = useTreeState();
 
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
@@ -16,11 +19,9 @@ const GoogleDrivePick = () => {
   }, []);
 
   useEffect(() => {
-
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
     script.onload = () => {
-
       window.gapi.load('client:auth2', () => {
         window.gapi.client.init({
           apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
@@ -28,7 +29,6 @@ const GoogleDrivePick = () => {
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
           scope: 'https://www.googleapis.com/auth/drive.file',
         }).then(() => {
-
           const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
           if (isSignedIn) {
             const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
@@ -43,13 +43,25 @@ const GoogleDrivePick = () => {
   const handleSuccess = (data) => {
     console.log('Selected Files:', data);
 
+    data.docs.forEach((file) => {
+      const newFamilyMember = {
+        id: file.id,
+        Name: file.name,
+      };
 
+      setData((prevData) => {
+        const updatedData = { ...prevData, [newFamilyMember.id]: newFamilyMember };
+        return updatedData;
+      });
+
+
+      setSelectedNode(newFamilyMember);
+    });
   };
 
+
   const handleAuthClick = () => {
-
     if (window.gapi && window.gapi.auth2) {
-
       window.gapi.auth2.getAuthInstance().signIn().then((user) => {
         setOauthToken(user.getAuthResponse().access_token);
       });
@@ -77,7 +89,6 @@ const GoogleDrivePick = () => {
   };
 
   const handleSignOut = () => {
-
     if (window.gapi && window.gapi.auth2) {
       window.gapi.auth2.getAuthInstance().signOut().then(() => {
         setOauthToken(null);
