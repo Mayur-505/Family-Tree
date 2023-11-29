@@ -74,7 +74,6 @@ const GoogleDrivePick = () => {
 
   return (
     <div>
-      <h1>Google Drive Files</h1>
       <button onClick={authenticate}>Sign In</button>
       <ul>
         {files.map((file) => (
