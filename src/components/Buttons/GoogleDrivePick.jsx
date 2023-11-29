@@ -19,25 +19,30 @@ const GoogleDrivePick = () => {
     // Load the Google API client library
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-      // Initialize the Google API client
-      window.gapi.load('client:auth2', () => {
-        window.gapi.client.init({
-          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
-          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-          scope: 'https://www.googleapis.com/auth/drive.file',
-        }).then(() => {
-          // Check if the user is already signed in
-          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-          if (isSignedIn) {
-            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
-            setOauthToken(currentUser.get().getAuthResponse().access_token);
-          }
+    if (window.gapi) {
+      script.onload = () => {
+        // Initialize the Google API client
+        window.gapi.load('client:auth2', () => {
+          window.gapi.client.init({
+            apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
+            clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            scope: 'https://www.googleapis.com/auth/drive.file',
+          }).then(() => {
+            // Check if the user is already signed in
+            const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+            if (isSignedIn) {
+              const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
+              setOauthToken(currentUser.get().getAuthResponse().access_token);
+            }
+          });
         });
-      });
-    };
+      }
+    } else {
+      console.error('Google API client library not loaded.');
+    }
     document.head.appendChild(script);
+
   }, []);
 
   const handleSuccess = (data) => {
@@ -76,20 +81,6 @@ const GoogleDrivePick = () => {
     });
   };
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-      if (window.gapi) {
-        window.gapi.load('client:auth2', () => {
-          // Rest of your initialization code
-        });
-      } else {
-        console.error('Google API client library not loaded.');
-      }
-    };
-    document.head.appendChild(script);
-  }, []);
 
 
   return (
