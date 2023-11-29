@@ -9,6 +9,7 @@ const GoogleDrivePick = () => {
   const [selectedNode, setSelectedNode] = useSelectedNodeState();
   const [data, setData] = useTreeState();
 
+
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
 
@@ -64,13 +65,22 @@ const GoogleDrivePick = () => {
     if (window.gapi && window.gapi.auth2) {
       window.gapi.auth2.getAuthInstance().signIn().then((user) => {
         setOauthToken(user.getAuthResponse().access_token);
+        console.log('Authenticated. Token:', user.getAuthResponse().access_token);
       });
     } else {
       console.error('Google API client library not fully loaded.');
     }
   };
 
+
+
+  const handlePickerClose = () => {
+    console.log('User closed the Google Picker.');
+  };
+
   const openPicker = () => {
+    console.log('OAuth Token:', oauthToken);
+
     if (!oauthToken || !window.gapi) {
       console.error('Authentication required. Please authenticate first or check Google API availability.');
       return;
