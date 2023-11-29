@@ -16,11 +16,11 @@ const GoogleDrivePick = () => {
   }, []);
 
   useEffect(() => {
-    // Load the Google API client library
+
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
     script.onload = () => {
-      // Initialize the Google API client
+
       window.gapi.load('client:auth2', () => {
         window.gapi.client.init({
           apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
@@ -28,7 +28,7 @@ const GoogleDrivePick = () => {
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
           scope: 'https://www.googleapis.com/auth/drive.file',
         }).then(() => {
-          // Check if the user is already signed in
+
           const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
           if (isSignedIn) {
             const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
@@ -42,12 +42,14 @@ const GoogleDrivePick = () => {
 
   const handleSuccess = (data) => {
     console.log('Selected Files:', data);
+
+
   };
 
   const handleAuthClick = () => {
-    // Ensure that gapi and gapi.auth2 are available
+
     if (window.gapi && window.gapi.auth2) {
-      // Trigger the Google Sign-In dialog
+
       window.gapi.auth2.getAuthInstance().signIn().then((user) => {
         setOauthToken(user.getAuthResponse().access_token);
       });
@@ -75,7 +77,7 @@ const GoogleDrivePick = () => {
   };
 
   const handleSignOut = () => {
-    // Sign out the user
+
     if (window.gapi && window.gapi.auth2) {
       window.gapi.auth2.getAuthInstance().signOut().then(() => {
         setOauthToken(null);
