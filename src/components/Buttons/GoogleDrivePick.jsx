@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { GooglePicker } from 'react-google-picker';
+import GooglePicker from 'react-google-picker';
 import queryString from 'query-string';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
 
   useEffect(() => {
-    // Check if the URL contains an access token after redirection
     const { access_token } = queryString.parse(window.location.hash);
 
     if (access_token) {
-      // Update state with the obtained access token
       setOauthToken(access_token);
-
-      // Clear the URL hash to avoid exposing the token
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+  }, []);
+
+  useEffect(() => {
+    // Load the Google API client library
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => {
+      window.gapi.load('picker');
+    };
+    document.head.appendChild(script);
   }, []);
 
   const handleSuccess = (data) => {
@@ -33,8 +39,8 @@ const GoogleDrivePick = () => {
   };
 
   const openPicker = () => {
-    if (!oauthToken) {
-      console.error('Authentication required. Please authenticate first.');
+    if (!oauthToken || !window.gapi) {
+      console.error('Authentication required. Please authenticate first or check Google API availability.');
       return;
     }
 
@@ -52,10 +58,14 @@ const GoogleDrivePick = () => {
 
   return (
     <div>
-      <button onClick={handleAuthClick}>Authenticate with Google</button>
-      <button onClick={openPicker} disabled={!oauthToken}>
-        Open Google Picker
-      </button>
+      {!oauthToken ? (
+        <button onClick={handleAuthClick}>Authenticate with Google</button>
+      ) : (
+        <>
+          <button onClick={openPicker}>Open Google Picker</button>
+          <p>Authenticated successfully!</p>
+        </>
+      )}
     </div>
   );
 };
