@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import GooglePicker from 'react-google-picker';
 import queryString from 'query-string';
+import { Button } from '@mui/material';
+import { style } from './Button';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
@@ -30,7 +32,10 @@ const GoogleDrivePick = () => {
 
   const handleAuthClick = () => {
     const clientId = '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com';
-    const redirectUri = 'http://localhost:3000';
+    // const redirectUri = 'http://localhost:3000';
+    const currentDomain = window.location.origin;
+
+    const redirectUri = `${currentDomain}/auth-callback`;
 
     const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=https://www.googleapis.com/auth/drive.file`;
 
@@ -56,14 +61,19 @@ const GoogleDrivePick = () => {
     });
   };
 
+  const handleSignOut = () => {
+    // Simulate sign out by clearing the oauthToken
+    setOauthToken(null);
+  };
+
   return (
     <div>
       {!oauthToken ? (
-        <button onClick={handleAuthClick}>Authenticate with Google</button>
+        <Button sx={style} component="label" onClick={handleAuthClick}>Authenticate with Google</Button>
       ) : (
         <>
-          <button onClick={openPicker}>Open Google Picker</button>
-          <p>Authenticated successfully!</p>
+          <Button sx={style} component="label" onClick={openPicker}>Open Google Picker</Button>
+          <Button sx={style} onClick={handleSignOut}>Sign Out</Button>
         </>
       )}
     </div>
