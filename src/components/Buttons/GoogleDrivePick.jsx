@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import GooglePicker from 'react-google-picker';
-import queryString from 'query-string';
 import { Button } from '@mui/material';
 import { style } from './Button';
+import queryString from 'query-string';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
@@ -21,7 +20,22 @@ const GoogleDrivePick = () => {
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
     script.onload = () => {
-      window.gapi.load('picker');
+      // Initialize the Google API client
+      window.gapi.load('client:auth2', () => {
+        window.gapi.client.init({
+          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
+          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive.file',
+        }).then(() => {
+          // Check if the user is already signed in
+          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+          if (isSignedIn) {
+            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
+            setOauthToken(currentUser.get().getAuthResponse().access_token);
+          }
+        });
+      });
     };
     document.head.appendChild(script);
   }, []);
@@ -31,16 +45,10 @@ const GoogleDrivePick = () => {
   };
 
   const handleAuthClick = () => {
-    const clientId = '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com';
-    // const redirectUri = 'http://localhost:3000';
-    const currentDomain = window.location.origin;
-
-    const redirectUri = `${currentDomain}/auth-callback`;
-
-    const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=https://www.googleapis.com/auth/drive.file`;
-
-    // Redirect the user to Google for authentication
-    window.location.href = authUrl;
+    // Trigger the Google Sign-In dialog
+    window.gapi.auth2.getAuthInstance().signIn().then((user) => {
+      setOauthToken(user.getAuthResponse().access_token);
+    });
   };
 
   const openPicker = () => {
@@ -62,8 +70,10 @@ const GoogleDrivePick = () => {
   };
 
   const handleSignOut = () => {
-    // Simulate sign out by clearing the oauthToken
-    setOauthToken(null);
+    // Sign out the user
+    window.gapi.auth2.getAuthInstance().signOut().then(() => {
+      setOauthToken(null);
+    });
   };
 
   return (
