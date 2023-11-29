@@ -9,7 +9,6 @@ const GoogleDrivePick = () => {
   const [selectedNode, setSelectedNode] = useSelectedNodeState();
   const [data, setData] = useTreeState();
 
-
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
 
@@ -55,11 +54,9 @@ const GoogleDrivePick = () => {
         return updatedData;
       });
 
-
       setSelectedNode(newFamilyMember);
     });
   };
-
 
   const handleAuthClick = () => {
     if (window.gapi && window.gapi.auth2) {
@@ -71,8 +68,6 @@ const GoogleDrivePick = () => {
       console.error('Google API client library not fully loaded.');
     }
   };
-
-
 
   const handlePickerClose = () => {
     console.log('User closed the Google Picker.');
@@ -92,6 +87,7 @@ const GoogleDrivePick = () => {
         .setOAuthToken(oauthToken)
         .setDeveloperKey('AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg')
         .setCallback(handleSuccess)
+        .setOrigin(window.location.protocol + '//' + window.location.host)
         .build();
 
       picker.setVisible(true);
@@ -115,7 +111,7 @@ const GoogleDrivePick = () => {
       ) : (
         <>
           <Button sx={style} component="label" onClick={openPicker}>
-            Open Google Picker
+            Choose File from Google Drive
           </Button>
           <Button sx={style} component="label" onClick={handleSignOut}>
             Sign Out
