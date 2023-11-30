@@ -3,13 +3,14 @@ import { Button } from '@mui/material';
 import queryString from 'query-string';
 import { style } from './Button';
 import { useTreeState, useSelectedNodeState } from '../../contexts';
-import FolderStructure from '../layouts/FolderStructure';
+
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
   console.log("oauthToken", oauthToken)
   const [data, setData] = useTreeState();
-  const setSelectedNode = useSelectedNodeState()[1];
+  // const setSelectedNode = useSelectedNodeState()[1];
+  const [selectedNode, setSelectedNode] = useSelectedNodeState()
 
   useEffect(() => {
     const { access_token } = queryString.parse(window.location.hash);
@@ -31,73 +32,78 @@ const GoogleDrivePick = () => {
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
           scope: 'https://www.googleapis.com/auth/drive.file',
         }).then(() => {
-          const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+          const authInstance = window.gapi.auth2.getAuthInstance();
+          const isSignedIn = authInstance.isSignedIn.get();
+
           if (isSignedIn) {
-            const currentUser = window.gapi.auth2.getAuthInstance().currentUser.get();
-            setOauthToken(currentUser.get().getAuthResponse().access_token);
+            const currentUser = authInstance.currentUser.get();
+
+            if (currentUser) {
+              const authResponse = currentUser.getAuthResponse();
+              setOauthToken(authResponse.access_token);
+            }
           }
         });
       });
+
     };
     document.head.appendChild(script);
   }, []);
 
-  // ...
+  // const updateTreeStateWithFiles = (selectedFiles) => {
 
-  const updateTreeStateWithFiles = (selectedFiles) => {
-
-    selectedFiles.forEach((file) => {
-      const reader = new FileReader();
+  //   selectedFiles.forEach((file) => {
+  //     const reader = new FileReader();
 
 
-      reader.onload = (e) => {
-        try {
+  //     reader.onload = (e) => {
+  //       try {
 
-          const jsonData = JSON.parse(e.target.result);
+  //         const jsonData = JSON.parse(e.target.result);
 
-          setData((prevData) => {
-            const updatedData = { ...prevData };
-
-
-            extractNodesFromJson(jsonData, updatedData);
-
-            return updatedData;
-          });
+  //         setData((prevData) => {
+  //           const updatedData = { ...prevData };
 
 
-          setSelectedNode(jsonData);
-        } catch (error) {
+  //           extractNodesFromJson(jsonData, updatedData);
 
-          console.error('Error parsing JSON:', error);
-          alert('Invalid JSON file');
-        }
-      };
+  //           return updatedData;
+  //         });
 
 
-      reader.readAsText(file);
-    });
-  };
+  //         setSelectedNode(jsonData);
+  //       } catch (error) {
 
-  const extractNodesFromJson = (jsonData, updatedData, currentPath = '') => {
-
-    if (typeof jsonData === 'object' && jsonData !== null) {
-
-      for (const [key, value] of Object.entries(jsonData)) {
-
-        const newPath = currentPath ? `${currentPath}.${key}` : key;
+  //         console.error('Error parsing JSON:', error);
+  //         alert('Invalid JSON file');
+  //       }
+  //     };
 
 
-        updatedData[newPath] = {
-          id: newPath,
-          Name: key,
+  //     reader.readAsText(file);
+  //   });
+  // };
 
-        };
+  // const extractNodesFromJson = (jsonData, updatedData, currentPath = '') => {
+
+  //   if (typeof jsonData === 'object' && jsonData !== null) {
+
+  //     for (const [key, value] of Object.entries(jsonData)) {
+
+  //       const newPath = currentPath ? `${currentPath}.${key}` : key;
 
 
-        extractNodesFromJson(value, updatedData, newPath);
-      }
-    }
-  };
+  //       updatedData[newPath] = {
+  //         id: newPath,
+  //         Name: key,
+
+  //       };
+
+
+  //       extractNodesFromJson(value, updatedData, newPath);
+  //     }
+  //   }
+  // };
 
 
   const handleSuccess = (data) => {
@@ -107,7 +113,6 @@ const GoogleDrivePick = () => {
       const selectedFile = data.docs[0];
       console.log('Selected File ID:', selectedFile.id);
 
-      // Use the file ID to retrieve file content from Google Drive API
       window.gapi.client.drive.files
         .get({
           fileId: selectedFile.id,
@@ -117,7 +122,7 @@ const GoogleDrivePick = () => {
           const fileContent = response.body;
 
           try {
-            // Now you can parse and use the file content as needed
+
             const jsonData = JSON.parse(fileContent);
             setData(jsonData)
 
@@ -136,44 +141,21 @@ const GoogleDrivePick = () => {
     }
   };
 
-  // const handleAuthClick = () => {
-  //   if (window.gapi && window.gapi.auth2) {
-  //     window.gapi.auth2.getAuthInstance().signIn().then(
-  //       (user) => {
-  //         console.log('Authenticated. Token:', user.getAuthResponse().access_token);
-  //         setOauthToken(user.getAuthResponse().access_token);
-  //       },
-  //       (error) => {
-  //         console.error('Authentication error:', error);
-  //       }
-  //     );
-  //   } else {
-  //     console.error('Google API client library not fully loaded.');
-  //   }
-  // };
-
   const handleAuthClick = () => {
     if (window.gapi && window.gapi.auth2) {
-      const authOptions = {
-        client_id: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/drive.metadata.readonly', // Adjust the scope as needed
-        immediate: false, // Setting immediate to false forces the user to always see the consent screen.
-      };
-
-      window.gapi.auth2.authorize(authOptions, (response) => {
-        if (response.error) {
-          console.error('Authorization error:', response.error);
-        } else {
-          const accessToken = response.access_token;
-          console.log('Authenticated. Token:', accessToken);
-          setOauthToken(accessToken);
+      window.gapi.auth2.getAuthInstance().signIn().then(
+        (user) => {
+          console.log('Authenticated. Token:', user.getAuthResponse().access_token);
+          setOauthToken(user.getAuthResponse().access_token);
+        },
+        (error) => {
+          console.error('Authentication error:', error);
         }
-      });
+      );
     } else {
       console.error('Google API client library not fully loaded.');
     }
   };
-
 
   const handlePickerClose = () => {
     console.log('User closed the Google Picker.');
@@ -188,12 +170,18 @@ const GoogleDrivePick = () => {
     }
 
     window.gapi.load('picker', () => {
+      const getPickerOrigin = () => {
+        const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+        const host = window.location.host;
+        return `${protocol}//${host}`;
+      };
+
       const picker = new window.google.picker.PickerBuilder()
         .addView(window.google.picker.ViewId.DOCS)
         .setOAuthToken(oauthToken)
         .setDeveloperKey('AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg')
         .setCallback(handleSuccess)
-        .setOrigin(window.location.protocol + '//' + window.location.host)
+        .setOrigin(getPickerOrigin())
         .build();
 
       picker.setVisible(true);
