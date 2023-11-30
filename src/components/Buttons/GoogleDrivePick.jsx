@@ -27,8 +27,8 @@ const GoogleDrivePick = () => {
     script.onload = () => {
       window.gapi.load('client:auth2', () => {
         window.gapi.client.init({
-          apiKey: 'AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg',
-          clientId: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+          apiKey: 'AIzaSyC-X1OtXh97rucjKLeGhsX0j4UJdFEoF1M',
+          clientId: '990697486435-icl7vg6fnrh20fmjgdsu8j1orrudrmvk.apps.googleusercontent.com',
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
           scope: 'https://www.googleapis.com/auth/drive.file',
         }).then(() => {
@@ -49,6 +49,7 @@ const GoogleDrivePick = () => {
     };
     document.head.appendChild(script);
   }, []);
+
 
   // const updateTreeStateWithFiles = (selectedFiles) => {
 
@@ -168,24 +169,22 @@ const GoogleDrivePick = () => {
       console.error('Authentication required. Please authenticate first or check Google API availability.');
       return;
     }
-
     window.gapi.load('picker', () => {
-      const getPickerOrigin = () => {
-        const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-        const host = window.location.host;
-        return `${protocol}//${host}`;
-      };
 
       const picker = new window.google.picker.PickerBuilder()
         .addView(window.google.picker.ViewId.DOCS)
         .setOAuthToken(oauthToken)
-        .setDeveloperKey('AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg')
+        .setDeveloperKey('AIzaSyC-X1OtXh97rucjKLeGhsX0j4UJdFEoF1M')
         .setCallback(handleSuccess)
-        .setOrigin(getPickerOrigin())
+        .setOrigin(window.location.protocol + '//' + window.location.host)
+        .setRelayUrl(window.location.host)
+        .setAppId('family-tree-406710')
         .build();
 
       picker.setVisible(true);
     });
+
+
   };
 
   const handleSignOut = () => {
@@ -195,6 +194,18 @@ const GoogleDrivePick = () => {
       });
     }
   };
+
+  useEffect(() => {
+    window.gapi.load('picker', () => {
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log('Google Picker API loaded:', window.google && window.google.picker);
+  }, []);
+
+
+
 
   return (
     <div>
