@@ -7,6 +7,7 @@ import FolderStructure from '../layouts/FolderStructure';
 
 const GoogleDrivePick = () => {
   const [oauthToken, setOauthToken] = useState(null);
+  console.log("oauthToken", oauthToken)
   const [data, setData] = useTreeState();
   const setSelectedNode = useSelectedNodeState()[1];
 
@@ -135,16 +136,44 @@ const GoogleDrivePick = () => {
     }
   };
 
+  // const handleAuthClick = () => {
+  //   if (window.gapi && window.gapi.auth2) {
+  //     window.gapi.auth2.getAuthInstance().signIn().then(
+  //       (user) => {
+  //         console.log('Authenticated. Token:', user.getAuthResponse().access_token);
+  //         setOauthToken(user.getAuthResponse().access_token);
+  //       },
+  //       (error) => {
+  //         console.error('Authentication error:', error);
+  //       }
+  //     );
+  //   } else {
+  //     console.error('Google API client library not fully loaded.');
+  //   }
+  // };
+
   const handleAuthClick = () => {
     if (window.gapi && window.gapi.auth2) {
-      window.gapi.auth2.getAuthInstance().signIn().then((user) => {
-        setOauthToken(user.getAuthResponse().access_token);
-        console.log('Authenticated. Token:', user.getAuthResponse().access_token);
+      const authOptions = {
+        client_id: '497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/drive.metadata.readonly', // Adjust the scope as needed
+        immediate: false, // Setting immediate to false forces the user to always see the consent screen.
+      };
+
+      window.gapi.auth2.authorize(authOptions, (response) => {
+        if (response.error) {
+          console.error('Authorization error:', response.error);
+        } else {
+          const accessToken = response.access_token;
+          console.log('Authenticated. Token:', accessToken);
+          setOauthToken(accessToken);
+        }
       });
     } else {
       console.error('Google API client library not fully loaded.');
     }
   };
+
 
   const handlePickerClose = () => {
     console.log('User closed the Google Picker.');
