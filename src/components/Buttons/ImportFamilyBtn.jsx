@@ -73,7 +73,7 @@ export const ImportFamilyBtn = () => {
         const formatted = JSON.stringify(result, null, 2)
         result.value = formatted
 
-        // console.log(result)
+        console.log("result", result)
         setData(result)
         setSelectedNode(result)
       } catch (error) {

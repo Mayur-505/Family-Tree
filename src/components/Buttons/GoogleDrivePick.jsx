@@ -102,11 +102,37 @@ const GoogleDrivePick = () => {
   const handleSuccess = (data) => {
     console.log('Selected Files:', data);
 
+    if (data.docs && data.docs.length > 0) {
+      const selectedFile = data.docs[0];
+      console.log('Selected File ID:', selectedFile.id);
 
-    const jsonFiles = data.docs.filter((file) => file.mimeType === 'application/json');
+      // Use the file ID to retrieve file content from Google Drive API
+      window.gapi.client.drive.files
+        .get({
+          fileId: selectedFile.id,
+          alt: 'media',
+        })
+        .then((response) => {
+          const fileContent = response.body;
 
+          try {
+            // Now you can parse and use the file content as needed
+            const jsonData = JSON.parse(fileContent);
+            setData(jsonData)
 
-    updateTreeStateWithFiles(jsonFiles);
+            console.log('Imported JSON file:', jsonData);
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+            alert('Invalid JSON file');
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching file content:', error);
+          alert('Error fetching file content');
+        });
+    } else {
+      console.log('No files selected.');
+    }
   };
 
   const handleAuthClick = () => {
