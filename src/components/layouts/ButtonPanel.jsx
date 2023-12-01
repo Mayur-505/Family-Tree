@@ -31,8 +31,8 @@ export const ButtonPanel = () => {
       <ImportFamilyBtn />
       <ExportFamilyBtn />
       {/* <GoogleApi /> */}
-      <GoogleDrivePick />
-      {/* <Googledriveapp /> */}
+      {/* <GoogleDrivePick /> */}
+      <Googledriveapp />
     </div>
   )
 }

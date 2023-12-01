@@ -1,9 +1,9 @@
-import {  Modal } from '@mui/material'
+import { Modal } from '@mui/material'
 import React from 'react'
 import { FamilyDetailsForm } from './FamilyDetailsForm';
 
 
-export const AddFamilyModalView = ({open,setOpen}) => {
+export const AddFamilyModalView = ({ open, setOpen }) => {
 
   const handleClose = () => setOpen(false)
 
@@ -16,7 +16,7 @@ export const AddFamilyModalView = ({open,setOpen}) => {
         aria-describedby="modal-modal-description"
       >
         <div>
-        <FamilyDetailsForm handleClose={handleClose} from={false} />
+          <FamilyDetailsForm handleClose={handleClose} from={false} />
         </div>
       </Modal>
     </>

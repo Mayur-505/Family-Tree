@@ -2,7 +2,6 @@
   display: inline;
   margin-Top: 5px;
   padding: 10px 17px;
-  color: White;
   font-Weight: 500;
   font-Size: 12px;
   background: #ffff;
@@ -13,4 +12,16 @@
 
 .buttons:hover {
   background: #ffa000;
+}
+
+.import-button {
+  display: inline;
+  margin-Top: 5px;
+  padding: 10px 17px;
+  color: White;
+  font-Weight: 600;
+  font-Size: 12px;
+  background: #ffa000;
+  border: none;
+  border-radius: 4px;
 }

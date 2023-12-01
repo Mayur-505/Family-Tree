@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react'
 
 const TreeStateCTX = createContext(null)
 
-export const TreeStateContext = ({children}) => {
+export const TreeStateContext = ({ children }) => {
 
     const treeState = useState({})
 

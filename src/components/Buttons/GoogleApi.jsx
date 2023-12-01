@@ -13,8 +13,8 @@ function GoogleApi() {
 
   const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
   const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
-  const CLIENT_ID = "497857861442-obkjgko2u2olskde533rvf6i21f2khd3.apps.googleusercontent.com";
-  const API_KEY = "AIzaSyDRBMb3f8y_DY4_TCpJeo3vO5ctJsd7YHg";
+  const CLIENT_ID = "990697486435-icl7vg6fnrh20fmjgdsu8j1orrudrmvk.apps.googleusercontent.com";
+  const API_KEY = "AIzaSyC-X1OtXh97rucjKLeGhsX0j4UJdFEoF1M";
 
   const updateSigninStatus = (isSignedIn) => {
     setIsSignedIn(isSignedIn);

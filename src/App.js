@@ -19,9 +19,9 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <script async defer src="https://apis.google.com/js/api.js"></script>
-      <script
+      {/* <script
         type="text/javascript"
-        src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+        src="https://apis.google.com/js/api.js?onload=onApiLoad"></script> */}
 
       <CssBaseline />
       <div id="App">

@@ -21,6 +21,7 @@ const GoogleDrivePick = () => {
     }
   }, []);
 
+
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api.js';
@@ -162,6 +163,11 @@ const GoogleDrivePick = () => {
     console.log('User closed the Google Picker.');
   };
 
+  function getOrigin() {
+    var url = window.google.script.host.origin;
+    return url.substr(url.length - 1) === "/" ? url.substr(0, url.length - 1) : url;
+  }
+
   const openPicker = () => {
     console.log('OAuth Token:', oauthToken);
 
@@ -175,10 +181,10 @@ const GoogleDrivePick = () => {
         .addView(window.google.picker.ViewId.DOCS)
         .setOAuthToken(oauthToken)
         .setDeveloperKey('AIzaSyC-X1OtXh97rucjKLeGhsX0j4UJdFEoF1M')
-        .setCallback(handleSuccess)
         .setOrigin(window.location.protocol + '//' + window.location.host)
         .setRelayUrl(window.location.host)
         .setAppId('family-tree-406710')
+        .setCallback(handleSuccess)
         .build();
 
       picker.setVisible(true);
