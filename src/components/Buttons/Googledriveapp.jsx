@@ -13,6 +13,8 @@ const Googledriveapp = () => {
   const [data, setData] = useTreeState();
   const [modalShow, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useSelectedNodeState()
+  const [currentpage, setcurrentPage] = useState(1)
+
 
   const MINIMUM_VALID_DURATION = 60;
 
@@ -37,7 +39,8 @@ const Googledriveapp = () => {
 
       const token = tokenInfo.access_token;
       setAccessToken(token);
-      fetchFiles(token);
+      fetchFiles(token, currentpage);
+
       handleModalOpen();
     } catch (error) {
       console.error('Error logging in:', error);
@@ -46,7 +49,7 @@ const Googledriveapp = () => {
 
 
 
-  const fetchFiles = async (token) => {
+  const fetchFiles = async (token, pageNumber) => {
     try {
       const response = await axios.get(
         `https://www.googleapis.com/drive/v3/files`,
@@ -57,6 +60,7 @@ const Googledriveapp = () => {
           params: {
             pageSize: 100,
             fields: 'nextPageToken, files(id, name, mimeType)',
+            // pageToken: pageNumber
           },
         }
       );
@@ -121,6 +125,24 @@ const Googledriveapp = () => {
     setShowModal(false);
   };
 
+  const handlePageChange = (pageNumber) => {
+    const nextPageToken = pageNumber > 1 ? files[files.length - 1].id : undefined;
+    fetchFiles(accessToken, nextPageToken);
+  };
+
+
+  const PaginationBtn = () => {
+    const totalpages = Math.ceil(files.length / 10)
+    const pagibtn = []
+
+    for (let i = 1; i <= totalpages; i++) {
+      pagibtn.push(<button key={i} onClick={() => handlePageChange(i)}>
+        {i}
+      </button>)
+    }
+    return pagibtn;
+  }
+
   const handleSignOut = () => {
     const auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(() => {
@@ -130,6 +152,92 @@ const Googledriveapp = () => {
     });
   };
 
+  const timestamp = new Date().toLocaleDateString("de-DE").replace(/\//g, '_');
+
+  const driveSave = async (accessToken, data) => {
+    const fileName = `family_tree_export_${timestamp}.json`;
+    const fileContent = JSON.stringify(data, null, 2);
+    const mimeType = 'application/json'
+
+    try {
+      const authHeader = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+      const response = await axios.get(
+        'https://www.googleapis.com/drive/v3/files',
+        {
+          headers: {
+            ...authHeader,
+            'Cache-Control': 'no-cache',
+          },
+          params: {
+            q: `name='${fileName}'`,
+          },
+        }
+      );
+
+      if (response.data.files.length > 0) {
+        const fileId = response.data.files[0].id;
+        console.log('File ID:', fileId);
+
+        try {
+          const updateResponse = await axios.patch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}`,
+            fileContent,
+            {
+              headers: {
+                ...authHeader,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (updateResponse.status === 200) {
+            alert('File updated on Google Drive successfully');
+          } else {
+            console.error('Unexpected response status during file update:', updateResponse.status);
+            alert('Error updating file on Google Drive. Check the console for details.');
+          }
+        } catch (updateError) {
+          console.error('Error during file update:', updateError.message);
+          alert('Error updating file on Google Drive. Check the console for details.');
+        }
+      } else {
+        try {
+          const createResponse = await axios.post(
+            'https://www.googleapis.com/upload/drive/v3/files',
+            fileContent,
+            {
+              headers: {
+                ...authHeader,
+                'Content-Type': 'application/json',
+              },
+              params: {
+                uploadType: 'media',
+                name: fileName,
+                mimeType: mimeType,
+
+              },
+            }
+          );
+          console.log("🚀 ~ file: Googledriveapp.jsx:223 ~ driveSave ~ createResponse:", createResponse.params)
+
+          if (createResponse.status === 200) {
+            alert('File exported on Google Drive successfully');
+          } else {
+            console.error('Unexpected response status during file creation:', createResponse.status);
+            alert('Error creating file on Google Drive. Check the console for details.');
+          }
+        } catch (createError) {
+          console.error('Error during file creation:', createError.message);
+          alert('Error creating file on Google Drive. Check the console for details.');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking file existence:', error.message);
+      alert('Error checking file existence on Google Drive. Check the console for details.');
+    }
+  };
 
   return (
     <div>
@@ -151,17 +259,24 @@ const Googledriveapp = () => {
         <Modal.Body>
           <ul>
             {files.map((file) => (
+
               <li key={file.id} className='drive-file'>
                 <div>{file.name} - {file.mimeType} </div>
                 <div> <button component="label" className='import-button' onClick={() => handleSuccess(file.id)}>Import</button> </div>
               </li>
+
+
             ))}
           </ul>
+          {/* <div>{PaginationBtn()}</div> */}
         </Modal.Body>
         <Modal.Footer>
           <button className='import-button' component="label" onClick={handleModalClose}>Close</button>
         </Modal.Footer>
       </Modal>
+      <Button sx={style} component="label" onClick={() => driveSave(accessToken, data)}>
+        Export JSON
+      </Button>
     </div>
   );
 };
