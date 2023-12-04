@@ -8,6 +8,7 @@ import { Button } from '@mui/material';
 import { style } from './Button'
 const Googledriveapp = () => {
   const [files, setFiles] = useState([]);
+  console.log("🚀 ~ file: Googledriveapp.jsx:11 ~ Googledriveapp ~ files:", files)
   const [accessToken, setAccessToken] = useState('');
   const [data, setData] = useTreeState();
   const [modalShow, setShowModal] = useState(false);
@@ -19,37 +20,22 @@ const Googledriveapp = () => {
     window.gapi.load('auth2', () => {
       window.gapi.auth2.init({
         client_id: '990697486435-icl7vg6fnrh20fmjgdsu8j1orrudrmvk.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/drive.file',
+        scope: 'https://www.googleapis.com/auth/drive',
       });
     });
   };
-
-  // const handleLogin = async () => {
-  //   try {
-  //     const auth2 = window.gapi.auth2.getAuthInstance();
-  //     const user = await auth2.signIn();
-
-  //     const tokenInfo = user.getAuthResponse();
-  //     if (tokenInfo.expires_in < MINIMUM_VALID_DURATION) {
-  //       console.warn('Token is about to expire. Handle token refresh.');
-  //     }
-
-  //     const token = tokenInfo.access_token;
-  //     setAccessToken(token);
-  //     fetchFiles(token);
-  //     handleModalOpen();
-  //   } catch (error) {
-  //     console.error('Error logging in:', error);
-  //   }
-  // };
 
   const handleLogin = async () => {
     try {
       const auth2 = window.gapi.auth2.getAuthInstance();
       const user = await auth2.signIn();
-      const tokenInfo = user.getAuthResponse();
-      const token = tokenInfo.access_token;
 
+      const tokenInfo = user.getAuthResponse();
+      if (tokenInfo.expires_in < MINIMUM_VALID_DURATION) {
+        console.warn('Token is about to expire. Handle token refresh.');
+      }
+
+      const token = tokenInfo.access_token;
       setAccessToken(token);
       fetchFiles(token);
       handleModalOpen();
@@ -57,6 +43,7 @@ const Googledriveapp = () => {
       console.error('Error logging in:', error);
     }
   };
+
 
 
   const fetchFiles = async (token) => {
@@ -68,13 +55,17 @@ const Googledriveapp = () => {
             Authorization: `Bearer ${token}`,
           },
           params: {
-            pageSize: 10,
+            pageSize: 100,
             fields: 'nextPageToken, files(id, name, mimeType)',
           },
         }
       );
 
-      setFiles(response.data.files);
+      const files = response.data.files;
+      console.log('Fetched files:', files);
+
+      setFiles(files);
+
     } catch (error) {
       console.error('Error fetching files:', error.message);
     }
@@ -116,6 +107,7 @@ const Googledriveapp = () => {
       alert(`Error importing file: ${error.message}`);
     }
   };
+
 
   useEffect(() => {
     initGoogleSignIn();
