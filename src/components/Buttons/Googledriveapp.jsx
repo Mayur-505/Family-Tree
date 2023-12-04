@@ -178,7 +178,7 @@ const Googledriveapp = () => {
 
       if (response.data.files.length > 0) {
         const fileId = response.data.files[0].id;
-        console.log('File ID:', fileId);
+
 
         try {
           const updateResponse = await axios.patch(
@@ -195,11 +195,11 @@ const Googledriveapp = () => {
           if (updateResponse.status === 200) {
             alert('File updated on Google Drive successfully');
           } else {
-            console.error('Unexpected response status during file update:', updateResponse.status);
+
             alert('Error updating file on Google Drive. Check the console for details.');
           }
         } catch (updateError) {
-          console.error('Error during file update:', updateError.message);
+
           alert('Error updating file on Google Drive. Check the console for details.');
         }
       } else {
@@ -220,21 +220,17 @@ const Googledriveapp = () => {
               },
             }
           );
-          console.log("🚀 ~ file: Googledriveapp.jsx:223 ~ driveSave ~ createResponse:", createResponse.params)
 
           if (createResponse.status === 200) {
             alert('File exported on Google Drive successfully');
           } else {
-            console.error('Unexpected response status during file creation:', createResponse.status);
             alert('Error creating file on Google Drive. Check the console for details.');
           }
         } catch (createError) {
-          console.error('Error during file creation:', createError.message);
           alert('Error creating file on Google Drive. Check the console for details.');
         }
       }
     } catch (error) {
-      console.error('Error checking file existence:', error.message);
       alert('Error checking file existence on Google Drive. Check the console for details.');
     }
   };
