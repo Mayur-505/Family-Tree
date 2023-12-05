@@ -76,7 +76,7 @@ export const useAddFamily = ({
             currentNode = currentNode.children[node];
           }
         });
-        console.log(currentNode, "this is the final");
+        // console.log(currentNode, "this is the final");
         currentNode.children = currentNode.children
           ? { ...currentNode.children, [uId]: { id: uId, ...familyInfo } }
           : { [uId]: { id: uId, ...familyInfo } };
