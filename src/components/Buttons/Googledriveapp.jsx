@@ -153,87 +153,62 @@ const Googledriveapp = () => {
   };
 
   const timestamp = new Date().toLocaleDateString("de-DE").replace(/\//g, '_');
+  const fileName = `family_tree_export_${timestamp}.json`;
+  const fileContent = JSON.stringify(data, null, 2);
+  const mimeType = 'application/json';
 
-  const driveSave = async (accessToken, data) => {
-    const fileName = `family_tree_export_${timestamp}.json`;
-    const fileContent = JSON.stringify(data, null, 2);
-    const mimeType = 'application/json'
+  const onUpload = async () => {
+
+    const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    const permissionUrl = 'https://www.googleapis.com/drive/v3/files';
 
     try {
-      const authHeader = {
-        Authorization: `Bearer ${accessToken}`,
-      };
-      const response = await axios.get(
-        'https://www.googleapis.com/drive/v3/files',
-        {
-          headers: {
-            ...authHeader,
-            'Cache-Control': 'no-cache',
+      const formData = new FormData();
+      formData.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json', originalFilename: 'rtte.json' })], { type: 'application/json' }));
+      formData.append('file', new Blob([fileContent], { type: mimeType }));
+
+      const uploadResponse = await axios.post(uploadUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (uploadResponse.status === 200) {
+        const fileId = uploadResponse.data.id;
+
+        // Set permission for the file (make it accessible to anyone with the link)
+        await axios.post(
+          `${permissionUrl}/${fileId}/permissions`,
+          {
+            role: 'reader',
+            type: 'anyone',
           },
-          params: {
-            q: `name='${fileName}'`,
-          },
-        }
-      );
-
-      if (response.data.files.length > 0) {
-        const fileId = response.data.files[0].id;
-
-
-        try {
-          const updateResponse = await axios.patch(
-            `https://www.googleapis.com/drive/v3/files/${fileId}`,
-            fileContent,
-            {
-              headers: {
-                ...authHeader,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-
-          if (updateResponse.status === 200) {
-            alert('File updated on Google Drive successfully');
-          } else {
-
-            alert('Error updating file on Google Drive. Check the console for details.');
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
-        } catch (updateError) {
+        );
 
-          alert('Error updating file on Google Drive. Check the console for details.');
-        }
+        alert(`File is exported to google drive:${fileName}`)
+
+        // Construct the link to view the file in Google Drive
+        const driveUrl = `https://drive.google.com/file/d/${fileId}/view`;
+
+        // Open the file in Google Drive
+        window.open(driveUrl, '_blank');
+
       } else {
-        try {
-          const createResponse = await axios.post(
-            'https://www.googleapis.com/upload/drive/v3/files',
-            fileContent,
-            {
-              headers: {
-                ...authHeader,
-                'Content-Type': 'application/json',
-              },
-              params: {
-                uploadType: 'media',
-                name: fileName,
-                mimeType: mimeType,
-
-              },
-            }
-          );
-
-          if (createResponse.status === 200) {
-            alert('File exported on Google Drive successfully');
-          } else {
-            alert('Error creating file on Google Drive. Check the console for details.');
-          }
-        } catch (createError) {
-          alert('Error creating file on Google Drive. Check the console for details.');
-        }
+        alert(`Error uploading file to Google Drive:${fileName}`)
       }
     } catch (error) {
-      alert('Error checking file existence on Google Drive. Check the console for details.');
+      alert(`Error uploading file:${error}`)
     }
   };
+
+
+
 
   return (
     <div>
@@ -270,7 +245,7 @@ const Googledriveapp = () => {
           <button className='import-button' component="label" onClick={handleModalClose}>Close</button>
         </Modal.Footer>
       </Modal>
-      <Button sx={style} component="label" onClick={() => driveSave(accessToken, data)}>
+      <Button sx={style} component="label" onClick={() => onUpload()}>
         Export JSON
       </Button>
     </div>
