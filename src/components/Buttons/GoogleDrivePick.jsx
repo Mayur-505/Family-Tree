@@ -128,7 +128,6 @@ const GoogleDrivePick = () => {
             const jsonData = JSON.parse(fileContent);
             setData(jsonData)
 
-            console.log('Imported JSON file:', jsonData);
           } catch (error) {
             console.error('Error parsing JSON:', error);
             alert('Invalid JSON file');

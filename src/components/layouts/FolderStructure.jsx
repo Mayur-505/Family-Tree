@@ -10,7 +10,6 @@ export const FolderStructure = () => {
     const depth = useRef(0)
 
     const [treeState] = useTreeState()
-    console.log("treeState", treeState)
 
     return (
         <div

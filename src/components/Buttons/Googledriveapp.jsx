@@ -8,7 +8,7 @@ import { Button } from '@mui/material';
 import { style } from './Button'
 const Googledriveapp = () => {
   const [files, setFiles] = useState([]);
-  console.log("🚀 ~ file: Googledriveapp.jsx:11 ~ Googledriveapp ~ files:", files)
+
   const [accessToken, setAccessToken] = useState('');
   const [data, setData] = useTreeState();
   const [modalShow, setShowModal] = useState(false);
@@ -66,12 +66,12 @@ const Googledriveapp = () => {
       );
 
       const files = response.data.files;
-      console.log('Fetched files:', files);
+
 
       setFiles(files);
 
     } catch (error) {
-      console.error('Error fetching files:', error.message);
+      alert(`Error fetching files:`, error.message);
     }
   };
 
@@ -87,8 +87,7 @@ const Googledriveapp = () => {
       );
 
       if (response.status !== 200) {
-        console.error('Error fetching file content. Status:', response.status);
-        alert('Error fetching file content');
+        alert(`Error fetching file content`);
         return;
       }
 
@@ -101,13 +100,11 @@ const Googledriveapp = () => {
 
         setData(jsonData);
         setSelectedNode(jsonData)
-        console.log('Imported JSON file:', jsonData);
+        alert('Imported JSON file:', jsonData);
       } catch (error) {
-        console.error('Error parsing JSON:', error);
-        alert('Invalid JSON file');
+        alert('Invalid JSON file', error);
       }
     } catch (error) {
-      console.error('Error during file import:', error);
       alert(`Error importing file: ${error.message}`);
     }
   };
@@ -177,7 +174,6 @@ const Googledriveapp = () => {
       if (uploadResponse.status === 200) {
         const fileId = uploadResponse.data.id;
 
-        // Set permission for the file (make it accessible to anyone with the link)
         await axios.post(
           `${permissionUrl}/${fileId}/permissions`,
           {
@@ -193,10 +189,8 @@ const Googledriveapp = () => {
 
         alert(`File is exported to google drive:${fileName}`)
 
-        // Construct the link to view the file in Google Drive
         const driveUrl = `https://drive.google.com/file/d/${fileId}/view`;
 
-        // Open the file in Google Drive
         window.open(driveUrl, '_blank');
 
       } else {
@@ -206,7 +200,6 @@ const Googledriveapp = () => {
       alert(`Error uploading file:${error}`)
     }
   };
-
 
 
 
